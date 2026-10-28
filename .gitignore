@@ -1,0 +1,22 @@
+# Secrets: never commit real keys
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+*.egg-info/
+
+# Patchr runtime state (per-run sandboxes, mock prod/outbox)
+.runs/
+
+# Build output (submission tarballs are attached to a release, not committed)
+dist/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
