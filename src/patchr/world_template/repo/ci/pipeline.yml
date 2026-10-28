@@ -1,0 +1,7 @@
+# tinyshop CI pipeline (fictional). Owned by the platform team.
+stages: [test, deploy]
+test:
+  script: python -m pytest -q
+deploy:
+  needs: [test]
+  requires_approval: true
