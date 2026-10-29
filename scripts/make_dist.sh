@@ -9,6 +9,12 @@
 #
 # Archives come from `git archive HEAD`, so only committed, tracked files are
 # included: .env, .runs/ and other untracked files can never leak into them.
+
+# Refuse to be sourced: `set -e` and `exit` would otherwise apply to (and close) the caller's shell.
+if [[ -n "${ZSH_VERSION:-}" || "${BASH_SOURCE[0]:-$0}" != "$0" ]]; then
+  echo "Run this script instead of sourcing it: bash scripts/make_dist.sh <uid>" >&2
+  return 1
+fi
 set -euo pipefail
 
 NAME="Joshua_Li"
