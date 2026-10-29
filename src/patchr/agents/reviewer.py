@@ -4,7 +4,8 @@ Each message it receives triggers one review round of the current workspace:
   1. get_diff: there must be a change, and every changed file must be under
      tinyshop/ and not protected (tinyshop/auth.py, tests/, ci/).
   2. run_tests: its own full test run must pass. Results claimed in messages are ignored.
-  3. If both checks pass: approve_release(diff_hash) and notify release.
+  3. If both checks pass: approve_release(diff_hash) and notify release, forwarding the
+     fixer's description of the change so release can write an accurate status update.
      Otherwise: send the problems back to the fixer.
 After MAX_ROUNDS rejected rounds it escalates to the on-call human and stops reviewing.
 """
@@ -77,8 +78,9 @@ class ReviewerAgent:
         self.think(f"All checks passed ({tests['summary']}); approving diff {diff['diff_hash']}.")
         self.tool("approve_release", diff_hash=diff["diff_hash"],
                   note=f"Ticket {self.ctx.scenario.ticket_id}, review round {self.rounds}")
+        description = next((m.body for m in reversed(inbox) if m.sender == "fixer"), "(none provided)")
         self.tool("send_message", to="release",
                   body=f"Approved diff {diff['diff_hash']} for ticket {self.ctx.scenario.ticket_id}. "
                        f"Changed files: {', '.join(diff['changed_files'])}. Independent test run: {tests['summary']}. "
-                       "Please deploy.")
+                       f"Please deploy.\n\nFixer's description of the change:\n{description}")
         self.ctx.trace.emit(self.name, "turn_end", reason="approved")

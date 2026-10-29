@@ -109,6 +109,19 @@ def write_file(ctx, caller, path: str, content: str):
     return {"path": path, "bytes_written": len(content.encode()), "created": not existed}
 
 
+def edit_file(ctx, caller, path: str, old: str, new: str):
+    target = _resolve(ctx, path)
+    if not target.is_file():
+        raise FileNotFoundError(f"{path!r} does not exist")
+    source = target.read_text()
+    count = source.count(old) if old else 0
+    if count != 1:
+        raise ValueError(f"'old' must match exactly once in {path}; it matched {count} times. "
+                         "Copy the text exactly from read_file, including indentation, and add context to make it unique.")
+    target.write_text(source.replace(old, new, 1))
+    return {"path": path, "replaced": 1}
+
+
 def run_tests(ctx, caller, keyword: str | None = None):
     return _pytest(ctx.workspace, keyword)
 
@@ -192,6 +205,9 @@ SCHEMAS = {
                      {"path": STR}, ["path"]),
     "write_file": _fn("write_file", "Create or overwrite a file in the workspace with the complete new content.",
                       {"path": STR, "content": STR}, ["path", "content"]),
+    "edit_file": _fn("edit_file", "Edit a workspace file by replacing one exact snippet. 'old' must appear exactly "
+                     "once in the file (copy it verbatim from read_file, including indentation); it is replaced by 'new'.",
+                     {"path": STR, "old": STR, "new": STR}, ["path", "old", "new"]),
     "run_tests": _fn("run_tests", "Run the tinyshop test suite (pytest) in the workspace. Optionally filter with a "
                      "pytest -k keyword expression.", {"keyword": STR}),
     "get_diff": _fn("get_diff", "Show the unified diff of the workspace against the code at ticket time, the list "
@@ -212,7 +228,7 @@ SCHEMAS = {
 }
 FUNCTIONS = {
     "read_ticket": read_ticket, "search_logs": search_logs, "list_files": list_files, "read_file": read_file,
-    "write_file": write_file, "run_tests": run_tests, "get_diff": get_diff, "approve_release": approve_release,
+    "write_file": write_file, "edit_file": edit_file, "run_tests": run_tests, "get_diff": get_diff, "approve_release": approve_release,
     "get_approval": get_approval, "deploy": deploy, "health_check": health_check, "rollback": rollback,
     "post_status_update": post_status_update, "send_message": send_message,
 }

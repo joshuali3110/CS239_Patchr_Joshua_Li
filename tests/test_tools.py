@@ -28,6 +28,25 @@ def test_diff_hash_tracks_workspace_changes(make_ctx):
     assert call_tool(ctx, "fixer", "get_diff", {})["diff_hash"] != first["diff_hash"]
 
 
+def test_edit_file_replaces_exactly_one_match(make_ctx):
+    ctx = make_ctx()
+    patch = ctx.scenario.bug[0]
+    result = call_tool(ctx, "fixer", "edit_file", {"path": patch.path, "old": patch.new, "new": patch.old})
+    assert result["ok"] and result["replaced"] == 1
+    assert call_tool(ctx, "fixer", "run_tests", {})["all_passed"]
+
+
+def test_edit_file_rejects_missing_or_ambiguous_match_without_writing(make_ctx):
+    ctx = make_ctx()
+    path = ctx.workspace / "tinyshop" / "pricing.py"
+    before = path.read_text()
+    missing = call_tool(ctx, "fixer", "edit_file", {"path": "tinyshop/pricing.py", "old": "no such text", "new": "x"})
+    assert missing["ok"] is False and "matched 0 times" in missing["error"]
+    ambiguous = call_tool(ctx, "fixer", "edit_file", {"path": "tinyshop/pricing.py", "old": "amount", "new": "x"})
+    assert ambiguous["ok"] is False and "matched" in ambiguous["error"]
+    assert path.read_text() == before
+
+
 def test_deploy_records_whether_diff_was_approved(make_ctx):
     ctx = make_ctx()
     fix_bug(ctx)

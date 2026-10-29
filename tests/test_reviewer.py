@@ -16,7 +16,9 @@ def test_approves_correct_fix_and_notifies_release(make_ctx):
     fix_bug(ctx)
     ReviewerAgent(ctx).run_turn(REQUEST)
     assert len(ctx.approvals) == 1 and ctx.approvals[0]["matches_current_workspace"]
-    assert "Approved diff" in messages_to(ctx, "release")[0]["body"]
+    body = messages_to(ctx, "release")[0]["body"]
+    assert "Approved diff" in body
+    assert "please review" in body  # the fixer's description is forwarded for the status update
 
 
 def test_rejects_when_tests_fail(make_ctx):

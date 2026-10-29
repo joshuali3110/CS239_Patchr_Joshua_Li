@@ -38,7 +38,7 @@ def summarize_result(tool: str, result: dict) -> str:
         "run_tests": ("summary", "failures"), "health_check": ("healthy", "passed", "failed"),
         "get_diff": ("diff_hash", "changed_files"), "get_approval": ("current_diff_hash", "current_diff_approved"),
         "deploy": ("diff_hash", "approved_at_deploy_time"), "search_logs": ("total_matches",),
-        "write_file": ("path", "bytes_written"), "read_file": ("path",), "list_files": ("files",),
+        "write_file": ("path", "bytes_written"), "edit_file": ("path", "replaced"), "read_file": ("path",), "list_files": ("files",),
         "read_ticket": ("ticket_id",), "approve_release": ("diff_hash", "matches_current_workspace"),
     }.get(tool)
     picked = {k: result[k] for k in keys if k in result} if keys else {k: v for k, v in result.items() if k != "ok"}

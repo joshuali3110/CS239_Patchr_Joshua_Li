@@ -27,10 +27,8 @@ def scripts_for(scenario: Scenario) -> dict:
 
     def fixer():
         for patch in scenario.bug:
-            messages = yield tool_call("read_file", json.dumps({"path": patch.path}), f"Reading {patch.path}.")
-            content = last_result(messages)["content"]
-            yield tool_call("write_file", json.dumps({"path": patch.path,
-                                                      "content": content.replace(patch.new, patch.old)}),
+            yield tool_call("read_file", json.dumps({"path": patch.path}), f"Reading {patch.path}.")
+            yield tool_call("edit_file", json.dumps({"path": patch.path, "old": patch.new, "new": patch.old}),
                             "Reverting the faulty logic.")
         yield tool_call("run_tests", "{}", "Running the suite.")
         messages = yield tool_call("get_diff", "{}", "Getting the diff hash for review.")
