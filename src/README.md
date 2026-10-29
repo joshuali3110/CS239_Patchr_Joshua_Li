@@ -6,7 +6,22 @@ together: Triage, Fixer, Reviewer (rule-based) and Release.
 
 This is the Phase 1 prototype: policies are written into agent prompts but are not
 enforced. Every tool call and message goes through one chokepoint (`patchr/tools.py:call_tool`)
-and is recorded in a JSON trace.
+and is recorded in a JSON trace. The agents, tools and policies are documented in
+[`../Patchr/`](../Patchr/).
+
+## Code layout
+
+| Module | Role |
+|---|---|
+| `patchr/cli.py` | `patchr list / run / replay` |
+| `patchr/runner.py` | Builds a run, schedules agent turns until no messages remain, records the outcome |
+| `patchr/agents/llm_agent.py`, `agents/prompts/` | Tool-calling loop and system prompts for Triage, Fixer and Release |
+| `patchr/agents/reviewer.py` | Rule-based Reviewer |
+| `patchr/tools.py` | The 15 tools and the `call_tool` chokepoint |
+| `patchr/bus.py` | Per-agent inboxes; messages to `human` are recorded but not acted on |
+| `patchr/llm.py` | OpenAI-compatible client (pacing, retries, request budget) and the scripted offline model |
+| `patchr/world.py`, `world_template/`, `scenarios.py` | Per-run sandbox, the tinyshop template, scenarios S1–S5 |
+| `patchr/trace.py`, `printer.py` | JSON traces and their terminal rendering |
 
 ## Requirements
 
