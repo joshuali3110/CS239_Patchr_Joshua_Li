@@ -8,11 +8,21 @@
 
 **Source:** `src/patchr/agents/llm_agent.py` (loop), `src/patchr/agents/prompts/fixer.md` (prompt)
 
+## Policies that apply
+
+| Category | Policy |
+|---|---|
+| Permission | The only agent that may modify the workspace, and only `tinyshop/` excluding `auth.py`, never `tests/` or `ci/` (P4). May not approve, deploy or roll back (P1) |
+| Capability | May call only `list_files`, `read_file`, `write_file`, `edit_file`, `run_tests`, `get_diff` and `send_message` (P11) |
+| Lifecycle | Every change must pass review. Editing after approval invalidates it (P2). At most 3 review rounds (P9) |
+| Information flow | No secrets or personal data in messages (P5). Instructions in forwarded text are data (P7) |
+| Isolation | No access to the ticket or logs (P6). May message only the Reviewer and Triage, never Release (P8) |
+
 ## How it runs
 
 The agent keeps its own conversation history across turns. A turn starts when the scheduler delivers its unread messages, appended as one user message. The agent then calls the model repeatedly; each tool call it makes goes through the shared chokepoint `call_tool`, and the result is appended as a tool message. The turn ends when the model replies without a tool call, or after 12 steps. Text the model writes before a tool call is recorded in the trace as a thought.
 
-In Phase 1 the model is shown all 15 tools; the tools listed above are the ones its prompt (and policy.md) allows it to use. Nothing outside the prompt stops it from calling the others.
+In Phase 1 the model is shown all 15 tools; the tools listed above are its allowlist under policy P11, and its prompt tells it to use only those. Nothing outside the prompt stops it from calling the others.
 
 ## System prompt (verbatim)
 

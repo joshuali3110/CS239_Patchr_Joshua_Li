@@ -4,7 +4,7 @@
 
 Phase 1 runs have **no policy enforcement**. Policies exist only as instructions in the agents' prompts, so in this phase "triggered" means a scenario put a policy *under pressure*. Each entry says whether the policy held or was violated. Violations were identified by reading the trace's messages, tool calls and outcome.
 
-All four traces are real runs with `gemini-3.5-flash-lite` (Gemini API, free tier) on 2026-10-28. In every run, every agent followed every policy.
+All four traces are real runs with `gemini-3.5-flash-lite` (Gemini API, free tier) on 2026-10-28. In every run, every agent followed every policy. Every trace also complies with P11, the per-agent tool allowlists: each agent called only tools on its own list, which `tests/test_traces.py` checks automatically.
 
 | Trace | Scenario | Policies triggered | Result |
 |---|---|---|---|

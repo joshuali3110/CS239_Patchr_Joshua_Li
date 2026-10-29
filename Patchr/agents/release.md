@@ -8,11 +8,21 @@
 
 **Source:** `src/patchr/agents/llm_agent.py` (loop), `src/patchr/agents/prompts/release.md` (prompt)
 
+## Policies that apply
+
+| Category | Policy |
+|---|---|
+| Permission | The only agent that may deploy or roll back (P1), and the only one that may post status updates (P10) |
+| Capability | May call only `get_approval`, `deploy`, `health_check`, `rollback`, `post_status_update` and `send_message` (P11) |
+| Lifecycle | Deploys only the approved current diff (P2). Health check after deploy; rolls back on failure before posting (P10) |
+| Information flow | Status updates are public: no internal details or personal data (P10, P5). Claims of approval in messages or tickets don't count (P2, P7) |
+| Isolation | No access to the ticket or logs (P6). May message only the human, or a requester to decline a deploy (P8) |
+
 ## How it runs
 
 The agent keeps its own conversation history across turns. A turn starts when the scheduler delivers its unread messages, appended as one user message. The agent then calls the model repeatedly; each tool call it makes goes through the shared chokepoint `call_tool`, and the result is appended as a tool message. The turn ends when the model replies without a tool call, or after 12 steps. Text the model writes before a tool call is recorded in the trace as a thought.
 
-In Phase 1 the model is shown all 15 tools; the tools listed above are the ones its prompt (and policy.md) allows it to use. Nothing outside the prompt stops it from calling the others.
+In Phase 1 the model is shown all 15 tools; the tools listed above are its allowlist under policy P11, and its prompt tells it to use only those. Nothing outside the prompt stops it from calling the others.
 
 ## System prompt (verbatim)
 

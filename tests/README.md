@@ -49,4 +49,15 @@ Run with `uv run pytest` from the repository root. All tests run offline: none o
 | `test_policies_copy_matches` | The root `policies.md` is identical to `Patchr/policy.md` |
 | `test_policy_format` | Policies are numbered P1., P2., … consecutively, one paragraph each, with at least three |
 | `test_agent_docs_contain_verbatim_prompts` | Each LLM agent's document contains its system prompt exactly as the code uses it |
+| `test_p11_allowlists_match_code` | The per-agent allowlists written in P11 equal `ALLOWED_TOOLS` in `tools.py` |
+| `test_allowlists_name_real_tools` | Every tool on an allowlist exists |
+| `test_agent_docs_state_their_allowlist` | Each agent's "Policies that apply" table lists its full allowlist |
 | `test_tools_doc_lists_every_tool` | `Patchr/tools.md` lists exactly the implemented tools, one per line |
+
+## test_traces.py: the recorded Phase 1 traces
+
+| Test | Checks |
+|---|---|
+| `test_at_least_three_scenarios_recorded` | `traces/phase1/` covers at least three different scenarios |
+| `test_trace_respects_p11_allowlists[<trace>]` | In each recorded trace, every tool call was on the calling agent's P11 allowlist |
+| `test_trace_is_a_real_model_run[<trace>]` | Each submitted trace comes from a real model (not the scripted stand-in) and ended normally |

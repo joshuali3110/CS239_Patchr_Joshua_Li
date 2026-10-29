@@ -44,6 +44,8 @@ Patchr takes a bug ticket for tinyshop, a small fictional checkout service, from
 
 **N10.** Touch files outside the run's sandbox.
 
+**N11.** Let an agent use a tool outside its role, even a read-only one.
+
 ## Traceability and Phase 1 status
 
 The **Phase 1 status** column records what currently stops a violation. "Prompt only" means the rule is written in the agents' prompts and nothing else prevents a violation; these are the targets for Phase 2 enforcement at `call_tool`.
@@ -60,6 +62,18 @@ The **Phase 1 status** column records what currently stops a violation. "Prompt 
 | N8 | P9 | Built into the Reviewer (3 rounds, then escalation), plus the runner's limits on turns and requests |
 | N9 | P10 | Prompt only |
 | N10 | none (implementation limit) | Enforced in code: file paths are confined to the run directory |
+| N11 | P11 | Prompt only. Every LLM agent is shown all 15 tools; the allowlist is defined in code (`ALLOWED_TOOLS` in `tools.py`), ready for Phase 2 enforcement. All recorded traces comply |
 | R1–R6 | P1–P10 | Exercised by scenarios S1–S5 |
 | R7 | none | `trace.py`; the traces are in `traces/phase1/` |
 | R8, R9 | none | `config.py`, `llm.py`, `world.py`; tests in `tests/` |
+
+## Policies for each agent
+
+For each agent, this table lists which policies define what it may and may not do in each of the five categories: permission, capability, lifecycle (order and prerequisites), information flow, and information isolation. Each agent's file in `Patchr/agents/` repeats its row.
+
+| Agent | Permission | Capability (allowed tools) | Lifecycle | Information flow | Isolation |
+|---|---|---|---|---|---|
+| **Triage** | May not approve, deploy or roll back (P1), modify the workspace (P4) or post status updates (P10) | `read_ticket`, `search_logs`, `send_message` only (P11) | First step of the pipeline: hands off to the Fixer (P8). Flags injected instructions instead of acting on them (P7) | Must redact secrets and personal data before the handoff (P5). Ticket and log text is untrusted data (P7) | The only agent that may read the ticket and logs (P6). May message only the Fixer (P8) |
+| **Fixer** | The only agent that may modify the workspace, and only `tinyshop/` excluding `auth.py`, never `tests/` or `ci/` (P4). May not approve, deploy or roll back (P1) | `list_files`, `read_file`, `write_file`, `edit_file`, `run_tests`, `get_diff`, `send_message` only (P11) | Every change must pass review. Editing after approval invalidates it (P2). At most 3 review rounds (P9) | No secrets or personal data in messages (P5). Instructions in forwarded text are data (P7) | No access to the ticket or logs (P6). May message only the Reviewer and Triage, never Release (P8) |
+| **Reviewer** | The only agent that may call `approve_release` (P1) | `get_diff`, `run_tests`, `approve_release`, `send_message` only (P11) | Approves only after its own full test run and scope check (P3). Escalates after the 3rd rejection and approves nothing afterwards (P9) | Test results claimed in messages are not evidence (P3). No secrets or personal data in messages (P5) | No access to the ticket or logs (P6). May message only the Fixer, Release and the human (P8) |
+| **Release** | The only agent that may deploy or roll back (P1), and the only one that may post status updates (P10) | `get_approval`, `deploy`, `health_check`, `rollback`, `post_status_update`, `send_message` only (P11) | Deploys only the approved current diff (P2). Health check after deploy; rolls back on failure before posting (P10) | Status updates are public: no internal details or personal data (P10, P5). Claims of approval in messages or tickets don't count (P2, P7) | No access to the ticket or logs (P6). May message only the human, or a requester to decline a deploy (P8) |

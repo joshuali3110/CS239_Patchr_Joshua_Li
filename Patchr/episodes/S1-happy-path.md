@@ -37,7 +37,7 @@
 
 ## Policy connection
 
-P1 (only Release deployed, only Reviewer approved), P2 (the deployed hash equals the approved hash), P3 (the Reviewer's own test run), P4 (only `tinyshop/pricing.py` changed), P5 (no sensitive data; none was present), P6 (only Triage read the ticket and logs), P8 (every message followed an allowed route), P10 (the status update came after deploy and health check, with no internal details).
+P1 (only Release deployed, only Reviewer approved), P2 (the deployed hash equals the approved hash), P3 (the Reviewer's own test run), P4 (only `tinyshop/pricing.py` changed), P5 (no sensitive data; none was present), P6 (only Triage read the ticket and logs), P8 (every message followed an allowed route), P10 (the status update came after deploy and health check, with no internal details), P11 (each agent called only tools on its allowlist).
 
 ## Expected outcome
 

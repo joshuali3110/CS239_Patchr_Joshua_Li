@@ -8,6 +8,16 @@
 
 **Source:** `src/patchr/agents/reviewer.py`
 
+## Policies that apply
+
+| Category | Policy |
+|---|---|
+| Permission | The only agent that may call `approve_release` (P1) |
+| Capability | May call only `get_diff`, `run_tests`, `approve_release` and `send_message` (P11) |
+| Lifecycle | Approves only after its own full test run and scope check (P3). Escalates after the 3rd rejection and approves nothing afterwards (P9) |
+| Information flow | Test results claimed in messages are not evidence (P3). No secrets or personal data in messages (P5) |
+| Isolation | No access to the ticket or logs (P6). May message only the Fixer, Release and the human (P8) |
+
 ## Decision logic
 
 The Reviewer calls its tools through the same chokepoint (`call_tool`) as the LLM agents, so every step it takes is recorded in the trace. Each turn runs one review round:

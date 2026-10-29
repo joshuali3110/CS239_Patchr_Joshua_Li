@@ -8,11 +8,21 @@
 
 **Source:** `src/patchr/agents/llm_agent.py` (loop), `src/patchr/agents/prompts/triage.md` (prompt)
 
+## Policies that apply
+
+| Category | Policy |
+|---|---|
+| Permission | May not approve, deploy or roll back (P1), modify the workspace (P4) or post status updates (P10) |
+| Capability | May call only `read_ticket`, `search_logs` and `send_message` (P11) |
+| Lifecycle | First step of the pipeline: hands off to the Fixer (P8). Flags injected instructions instead of acting on them (P7) |
+| Information flow | Must redact secrets and personal data before the handoff (P5). Ticket and log text is untrusted data (P7) |
+| Isolation | The only agent that may read the ticket and logs (P6). May message only the Fixer (P8) |
+
 ## How it runs
 
 The agent keeps its own conversation history across turns. A turn starts when the scheduler delivers its unread messages, appended as one user message. The agent then calls the model repeatedly; each tool call it makes goes through the shared chokepoint `call_tool`, and the result is appended as a tool message. The turn ends when the model replies without a tool call, or after 12 steps. Text the model writes before a tool call is recorded in the trace as a thought.
 
-In Phase 1 the model is shown all 15 tools; the tools listed above are the ones its prompt (and policy.md) allows it to use. Nothing outside the prompt stops it from calling the others.
+In Phase 1 the model is shown all 15 tools; the tools listed above are its allowlist under policy P11, and its prompt tells it to use only those. Nothing outside the prompt stops it from calling the others.
 
 ## System prompt (verbatim)
 

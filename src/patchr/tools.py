@@ -234,6 +234,15 @@ FUNCTIONS = {
 }
 assert SCHEMAS.keys() == FUNCTIONS.keys()
 
+# Policy P11: each agent's tool allowlist. Phase 1 only documents it (every LLM agent
+# is shown every tool); Phase 2 enforces it at call_tool.
+ALLOWED_TOOLS = {
+    "triage": ("read_ticket", "search_logs", "send_message"),
+    "fixer": ("list_files", "read_file", "write_file", "edit_file", "run_tests", "get_diff", "send_message"),
+    "reviewer": ("get_diff", "run_tests", "approve_release", "send_message"),
+    "release": ("get_approval", "deploy", "health_check", "rollback", "post_status_update", "send_message"),
+}
+
 
 def call_tool(ctx: RunContext, caller: str, name: str, args, call_id: str | None = None) -> dict:
     """The single chokepoint for every tool call made by any agent.
